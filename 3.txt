@@ -1,0 +1,61 @@
+3
+a)
+import pandas as pd
+from sklearn.datasets import load_breast_cancer
+from sklearn.feature_selection import SelectKBest, f_classif
+# Load dataset
+data = load_breast_cancer()
+X = data.data
+y = data.target
+selector = SelectKBest(score_func=f_classif, k=10)
+X_new = selector.fit_transform(X, y)
+# Print selected feature names
+print("Selected Features:")
+print(data.feature_names[selector.get_support()])
+scores = pd.DataFrame({
+'Feature': data.feature_names,
+'Score': selector.scores_
+})
+data_scores = scores.sort_values(by='Score', ascending=True)
+print(data_scores)
+
+b)
+import pandas as pd
+from sklearn.datasets import load_breast_cancer
+from sklearn.feature_selection import SelectPercentile, f_classif
+data = load_breast_cancer()
+X = data.data
+y = data.target
+selector = SelectPercentile(score_func=f_classif, percentile=30)
+X_new = selector.fit_transform(X, y)
+print("SelectPercentile Selected Features:")
+print(data.feature_names[selector.get_support()])
+print("\nNumber of Features:", X_new.shape[1])
+scores = pd.DataFrame({
+'Feature': data.feature_names,
+'Score': selector.scores_
+})
+data_scores = scores.sort_values(by='Score', ascending=True)
+print("\nFeature Scores:")
+print(data_scores)
+
+c)
+import pandas as pd
+from sklearn.datasets import load_breast_cancer
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+data = load_breast_cancer()
+X = data.data
+y = data.target
+X_scaled = StandardScaler().fit_transform(X)
+pca = PCA(n_components=2)
+X_new = pca.fit_transform(X_scaled)
+print("PCA Result:")
+print(X_new)
+print("Explained Variance Ratio:")
+print(pca.explained_variance_ratio_)
+print("Total Explained Variance:")
+print(pca.explained_variance_ratio_.sum())
+
+
+

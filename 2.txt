@@ -1,0 +1,146 @@
+2
+# Initial and goal states
+START_STATE = [[2, 8, 3],
+               [1, 6, 4],
+               [7, 0, 5]]
+
+GOAL_STATE = [[1, 2, 3],
+              [8, 0, 4],
+              [7, 6, 5]]
+
+
+# Node class for A* search
+class PuzzleNode:
+    def __init__(self, state, parent=None, move="Start", g=0):
+        self.state = state
+        self.parent = parent
+        self.move = move
+        self.g = g
+        self.h = self.misplaced_tiles()
+        self.f = self.g + self.h
+
+    # Calculate misplaced tiles heuristic
+    def misplaced_tiles(self):
+        count = 0
+        for i in range(3):
+            for j in range(3):
+                if self.state[i][j] != 0 and self.state[i][j] != GOAL_STATE[i][j]:
+                    count += 1
+        return count
+
+    # Check goal state
+    def is_goal(self):
+        return self.state == GOAL_STATE
+
+    # Find blank tile
+    def find_blank(self):
+        for i in range(3):
+            for j in range(3):
+                if self.state[i][j] == 0:
+                    return i, j
+
+
+# Generate possible next states
+def get_children(node):
+    children = []
+    row, col = node.find_blank()
+
+    moves = [(-1, 0, "Up"), (1, 0, "Down"),
+             (0, -1, "Left"), (0, 1, "Right")]
+
+    for dr, dc, move_name in moves:
+        new_row, new_col = row + dr, col + dc
+
+        if 0 <= new_row < 3 and 0 <= new_col < 3:
+            new_state = [r[:] for r in node.state]
+            new_state[row][col], new_state[new_row][new_col] = \
+                new_state[new_row][new_col], new_state[row][col]
+
+            child = PuzzleNode(new_state, parent=node,
+                               move=move_name, g=node.g + 1)
+            children.append(child)
+
+    return children
+
+
+# Display puzzle state
+def print_state(state):
+    for row in state:
+        print(row)
+    print()
+
+
+# A* search algorithm
+def a_star_search():
+    start_node = PuzzleNode(START_STATE, g=0)
+    open_list = [start_node]
+    closed_list = []
+    iteration = 0
+
+    while open_list:
+        iteration += 1
+
+        # Select node with lowest f value
+        open_list.sort(key=lambda node: node.f)
+
+        print(f"---------- Iteration {iteration} ----------")
+        print("Open list (state : g + h = f):")
+
+        for n in open_list:
+            print(f"  g={n.g}, h={n.h}, f={n.f} -> {n.state}")
+
+        current = open_list.pop(0)
+
+        print(f"\nExpanding node with lowest f = {current.f}")
+        print_state(current.state)
+
+        # Check whether goal is reached
+        if current.is_goal():
+            print("GOAL STATE REACHED!\n")
+            return current
+
+        closed_list.append(current.state)
+
+        # Expand current node
+        for child in get_children(current):
+            if child.state in closed_list:
+                continue
+            open_list.append(child)
+
+    print("No solution found.")
+    return None
+
+
+# Display solution path and total cost
+def print_solution_path(goal_node):
+    path = []
+    node = goal_node
+
+    while node:
+        path.append(node)
+        node = node.parent
+
+    path.reverse()
+
+    print("=========== SOLUTION PATH ===========")
+
+    for step, node in enumerate(path):
+        print(f"Step {step} (Move: {node.move}, "
+              f"g={node.g}, h={node.h}, f={node.f})")
+        print_state(node.state)
+
+    print(f"Total number of moves (path cost) = {goal_node.g}")
+
+
+# Main program
+if __name__ == "__main__":
+    print("START STATE:")
+    print_state(START_STATE)
+
+    print("GOAL STATE:")
+    print_state(GOAL_STATE)
+
+    result = a_star_search()
+
+    if result:
+        print_solution_path(result)

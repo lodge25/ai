@@ -1,0 +1,58 @@
+6th
+
+pip install pandas numpy matplotlib scikit-learn
+
+# 1. Import libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_iris
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans, AgglomerativeClustering
+from sklearn.decomposition import PCA
+from sklearn.metrics import silhouette_score
+
+# 2. Load dataset
+iris = load_iris()
+X = pd.DataFrame(iris.data, columns=iris.feature_names)
+print("Dataset:\n", X.head())
+
+# 3. Normalize features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# 4. Apply K-Means clustering
+kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
+kmeans_labels = kmeans.fit_predict(X_scaled)
+
+# 5. Apply Agglomerative clustering for comparison
+agg = AgglomerativeClustering(n_clusters=3)
+agg_labels = agg.fit_predict(X_scaled)
+
+# 6. Compare clustering techniques
+print("\nK-Means Silhouette Score:",
+      round(silhouette_score(X_scaled, kmeans_labels), 3))
+
+print("Agglomerative Silhouette Score:",
+      round(silhouette_score(X_scaled, agg_labels), 3))
+
+# 7. Reduce data to 2 dimensions for visualization
+pca = PCA(n_components=2)
+X_pca = pca.fit_transform(X_scaled)
+
+# 8. Visualize K-Means clusters
+plt.figure(figsize=(7, 5))
+plt.scatter(X_pca[:, 0], X_pca[:, 1],
+            c=kmeans_labels, cmap="viridis")
+plt.title("K-Means Clustering")
+plt.xlabel("Principal Component 1")
+plt.ylabel("Principal Component 2")
+plt.show()
+
+# 9. Visualize Agglomerative clusters
+plt.figure(figsize=(7, 5))
+plt.scatter(X_pca[:, 0], X_pca[:, 1],
+            c=agg_labels, cmap="viridis")
+plt.title("Agglomerative Clustering")
+plt.xlabel("Principal Component 1")
+plt.ylabel("Principal Component 2")
+plt.show()
