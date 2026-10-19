@@ -1,0 +1,63 @@
+1 A 
+from collections import deque
+
+def water_jug(cap1, cap2, goal, method):
+    start = (0, 0)
+    visited = {start}
+    parent = {start: None}
+    action = {}
+
+    if goal < 0 or goal > max(cap1, cap2):
+        print("Goal cannot be reached.")
+        return
+
+    container = deque([start])
+
+    while container:
+        a, b = container.popleft() if method == "BFS" else container.pop()
+
+        if a == goal or b == goal:
+            path = []
+            state = (a, b)
+
+            while state is not None:
+                path.append((state, action.get(state, "Start")))
+                state = parent[state]
+
+            path.reverse()
+
+            print(f"\n{method} Solution:")
+            for state, act in path:
+                print(f"{act}: {state}")
+            return
+
+        next_states = [
+            ((cap1, b), "Fill Jug 1"),
+            ((a, cap2), "Fill Jug 2"),
+            ((0, b), "Empty Jug 1"),
+            ((a, 0), "Empty Jug 2"),
+            ((a - min(a, cap2 - b), b + min(a, cap2 - b)),
+             "Pour Jug 1 into Jug 2"),
+            ((a + min(b, cap1 - a), b - min(b, cap1 - a)),
+             "Pour Jug 2 into Jug 1")
+        ]
+
+        for next_state, act in next_states:
+            if next_state not in visited:
+                visited.add(next_state)
+                parent[next_state] = (a, b)
+                action[next_state] = act
+                container.append(next_state)
+
+    print(f"No solution found using {method}.")
+
+
+# User input
+cap1 = int(input("Enter capacity of Jug 1: "))
+cap2 = int(input("Enter capacity of Jug 2: "))
+goal = int(input("Enter goal amount: "))
+
+water_jug(cap1, cap2, goal, "BFS")
+water_jug(cap1, cap2, goal, "DFS")
+
+
